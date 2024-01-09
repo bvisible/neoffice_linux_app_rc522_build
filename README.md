@@ -1,3 +1,3 @@
 # Neoffice linux rc522
-<hr>
+<br>
 Neoffice central unit version repository
