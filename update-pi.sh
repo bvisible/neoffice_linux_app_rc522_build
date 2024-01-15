@@ -28,6 +28,9 @@ if [ "$version_tag" != "$current_version" ]; then
     
     # Trouver le dossier extrait
     extracted_folder=$(find /home/neoffice -maxdepth 1 -type d -name "bvisible-neoffice_linux_app_rc522_build-*")
+
+    # Supprimer l'ancien dossier
+    sudo rm -rf "/home/neoffice/neoffice_linux_app_rc522"
     
     # Renommer le dossier
     sudo mv "$extracted_folder" "/home/neoffice/neoffice_linux_app_rc522"
