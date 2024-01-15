@@ -172,7 +172,14 @@ class _DashboardPageState extends State<DashboardPage> {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
         child: Container(
-          color: Colors.white.withOpacity(0),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0),
+            borderRadius: BorderRadius.circular(10.0),
+            border: Border.all(
+              color: Color(0xFFEDEDED), // Code hexadécimal de la couleur pour ededed
+              width: 1, // Largeur de la bordure
+            ),
+          ),
           child: child,
         ),
       ),
