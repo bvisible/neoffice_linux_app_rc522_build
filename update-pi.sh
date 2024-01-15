@@ -41,8 +41,9 @@ if [ "$version_tag" != "$current_version" ]; then
     # Stocker la version actuelle
     echo $version_tag > "/home/neoffice/neoffice_version.txt"
     
-    # Changer le droit d'excution du fichier 
+    # Changer les droits d'excution des fichiers
     chmod +x /home/neoffice/neoffice_linux_app_rc522/neoffice_linux_app_rc522
+    chmod +x /home/neoffice/neoffice_linux_app_rc522/update-pi.sh
 
 else
     echo "L'application est déjà à jour."
