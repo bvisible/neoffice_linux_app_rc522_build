@@ -24,9 +24,14 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   bool _showVirtualKeyboardInstanceUrl = false;
   bool _showVirtualKeyboardPassword = false;
   bool _showVirtualKeyboardLocationDeviceId = false;
+  bool _showVirtualKeyboardWifiName = false;
+  bool _showVirtualKeyboardWifiPassword = false;
   String? _errorMessage;
   bool _obscureText = true;
+  bool _obscureTextWifi = true;
   bool _isShiftEnabled = false;
+  final _wifiNameController = TextEditingController();
+  final _wifiPasswordController = TextEditingController();
 
   void _showError(String message) {
     setState(() {
@@ -116,8 +121,30 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
 
   }
 
-  void _openWifiConfig() {
-    Process.run('lxterminal', ['--command', 'nm-connection-editor']);
+  Future<void> _connectToWifi() async {
+    String wifiName = _wifiNameController.text;
+    String wifiPassword = _wifiPasswordController.text;
+
+    // Afficher un SnackBar pour informer l'utilisateur que la vérification est en cours
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Vérification en cours...'),
+        duration: Duration(seconds: 2), // Afficher le SnackBar pour une durée limitée
+      ),
+    );
+
+    // Attendre que le SnackBar soit affiché pendant un moment avant de continuer
+    await Future.delayed(Duration(seconds: 2));
+
+    // Exécuter la commande de connexion au WiFi
+    ProcessResult result = await Process.run('nmcli', ['dev', 'wifi', 'connect', wifiName, 'password', wifiPassword]);
+
+    // Afficher le résultat de la connexion
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result.exitCode == 0 ? 'Connecté avec succès au WiFi' : 'Erreur lors de la connexion au WiFi'),
+      ),
+    );
   }
 
   @override
@@ -141,6 +168,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             _showVirtualKeyboardInstanceUrl = false;
             _showVirtualKeyboardPassword = false;
             _showVirtualKeyboardLocationDeviceId = false;
+            _showVirtualKeyboardWifiName = false;
+            _showVirtualKeyboardWifiPassword = false;
         });
       },
       child: SingleChildScrollView(
@@ -180,9 +209,106 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                   ),
                 ),
               SizedBox(height: 20),
+              TextFormField(
+                controller: _wifiNameController,
+                onTap: () {
+                  setState(() {
+                    _showVirtualKeyboardInstanceUrl = false;
+                    _showVirtualKeyboardPassword = false;
+                    _showVirtualKeyboardLocationDeviceId = false;
+                    _showVirtualKeyboardWifiName = true;
+                    _showVirtualKeyboardWifiPassword = false;
+                  });
+                },
+                decoration: InputDecoration(
+                  labelText: 'Nom du WiFi',
+                  filled: true,
+                  labelStyle: TextStyle(color: Color(0xFF1B1E24)),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFF1B1E24)),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                keyboardType: TextInputType.text,
+                style: TextStyle(color: Color(0xFF1B1E24)),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez entrer le nom du WiFi';
+                  }
+                  return null;
+                },
+              ),
+              if (_showVirtualKeyboardWifiName)
+                Container(
+                  color: Colors.grey.shade900,
+                  child: VirtualKeyboard(
+                    height: 300,
+                    type: VirtualKeyboardType.Alphanumeric,
+                    textController: _wifiNameController,
+                  ),
+                ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: _wifiPasswordController,
+                onTap: () {
+                  setState(() {
+                    _showVirtualKeyboardInstanceUrl = false;
+                    _showVirtualKeyboardPassword = false;
+                    _showVirtualKeyboardLocationDeviceId = false;
+                    _showVirtualKeyboardWifiName = false;
+                    _showVirtualKeyboardWifiPassword = true;
+                  });
+                },
+                decoration: InputDecoration(
+                  labelText: 'Mot de passe du WiFi',
+                  filled: true,
+                  labelStyle: TextStyle(color: Color(0xFF1B1E24)),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFF1B1E24)),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  suffixIcon: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _obscureTextWifi = !_obscureTextWifi;
+                      });
+                    },
+                    child: Icon(
+                      _obscureTextWifi
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      color: Color(0xFF1B1E24),
+                    ),
+                  ),
+                ),
+                obscureText: _obscureTextWifi,
+                style: TextStyle(color: Color(0xFF1B1E24)),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Veuillez entrer le mot de passe du WiFi';
+                  }
+                  return null;
+                },
+              ),
+              if (_showVirtualKeyboardWifiPassword)
+                Container(
+                  color: Colors.grey.shade900,
+                  child: VirtualKeyboard(
+                    height: 300,
+                    type: VirtualKeyboardType.Alphanumeric,
+                    textController: _wifiPasswordController,
+                  ),
+                ),
+              SizedBox(height: 16),
               ElevatedButton(
-                onPressed: _openWifiConfig,
-                child: Text('Ouvrir la configuration WiFi'),
+                onPressed: _connectToWifi,
+                child: Text('Se connecter au WiFi'),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
               ),
               SizedBox(height: 20),
               Form(
@@ -196,6 +322,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                           _showVirtualKeyboardInstanceUrl = true;
                           _showVirtualKeyboardPassword = false;
                           _showVirtualKeyboardLocationDeviceId = false;
+                          _showVirtualKeyboardWifiName = false;
+                          _showVirtualKeyboardWifiPassword = false;
                         });
                       },
                       decoration: InputDecoration(
@@ -235,6 +363,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                           _showVirtualKeyboardInstanceUrl = false;
                           _showVirtualKeyboardLocationDeviceId = false;
                           _showVirtualKeyboardPassword = true;
+                          _showVirtualKeyboardWifiName = false;
+                          _showVirtualKeyboardWifiPassword = false;
                         });
                       },
                       decoration: InputDecoration(
@@ -285,6 +415,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                           _showVirtualKeyboardInstanceUrl = false;
                           _showVirtualKeyboardPassword = false;
                           _showVirtualKeyboardLocationDeviceId = true;
+                          _showVirtualKeyboardWifiName = false;
+                          _showVirtualKeyboardWifiPassword = false;
                         });
                       },
                       decoration: InputDecoration(
