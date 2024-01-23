@@ -5,7 +5,7 @@ sudo apt-get autoremove -y
 sudo apt-get autoclean -y
 
 # Ajout des libs
-sudo apt-get install libgtk-3-dev libpigpio-dev libbcm2835-dev html-xml-utils
+sudo apt-get install libgtk-3-dev libpigpio-dev libbcm2835-dev html-xml-utils -y
 mkdir -p bcm2835 && wget -qO - http://www.open.com.au/mikem/bcm2835/bcm2835-1.73.tar.gz | tar xz --strip-components=1 -C bcm2835
 cd bcm2835
 ./configure
