@@ -5,7 +5,12 @@ sudo apt-get autoremove -y
 sudo apt-get autoclean -y
 
 # Ajout des libs
-sudo apt-get install libgtk-3-dev libpigpio-dev libbcm2835-dev
+sudo apt-get install libgtk-3-dev libpigpio-dev libbcm2835-dev html-xml-utils
+mkdir -p bcm2835 && wget -qO - http://www.open.com.au/mikem/bcm2835/bcm2835-1.73.tar.gz | tar xz --strip-components=1 -C bcm2835
+cd bcm2835
+./configure
+make
+sudo make install
 
 # Lire la version actuelle
 current_version=$(cat "/home/neoffice/neoffice_version.txt")
