@@ -176,8 +176,8 @@ class _DashboardPageState extends State<DashboardPage> {
             color: Colors.white.withOpacity(0),
             borderRadius: BorderRadius.circular(10.0),
             border: Border.all(
-              color: Color(0xFFEDEDED), // Code hexadécimal de la couleur pour ededed
-              width: 1, // Largeur de la bordure
+              color: Color(0xFFEDEDED).withOpacity(0.3),
+              width: 1,
             ),
           ),
           child: child,
@@ -214,7 +214,7 @@ class _DashboardPageState extends State<DashboardPage> {
             child: Background(),
           ),
           Padding(
-            padding: const EdgeInsets.all(50.0),
+            padding: const EdgeInsets.fromLTRB(50.0, 60.0, 50.0, 50.0),
             child: _buildBlurBoxGlobal(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
@@ -228,8 +228,11 @@ class _DashboardPageState extends State<DashboardPage> {
                             child: _buildBlurBox(
                               child: Row(
                                 children: [
-                                  Image.asset('assets/images/emoji_hello.png',
-                                      height: 35, width: 35),
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 10),
+                                    child: Image.asset('assets/images/emoji_hello.png',
+                                        height: 35, width: 35),
+                                  ),
                                   SizedBox(width: 10),
                                   Expanded(
                                     child: RichText(
@@ -245,8 +248,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                                 fontWeight: FontWeight.bold),
                                           ),
                                           TextSpan(
-                                            text:
-                                                'Veuillez scanner votre badge...',
+                                            text: 'Veuillez scanner votre badge...',
                                           ),
                                         ],
                                       ),
@@ -312,8 +314,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: <Widget>[
-                                        Icon(Icons.shopping_cart_outlined, size: 50),
-                                        Text('Second Screen'), 
+                                        Image.asset('assets/icons/cart.png', height: 80, width: 80),
+                                        SizedBox(width: 5.0),
+                                        Text('Second écran'),
                                       ],
                                     ),
                                   ),
@@ -334,7 +337,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           SizedBox(height: 10),
           Padding(
-            padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
+            padding: const EdgeInsets.only(top: 0, left: 10, right: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
