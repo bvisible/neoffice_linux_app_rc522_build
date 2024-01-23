@@ -4,6 +4,9 @@ sudo rpi-update -y
 sudo apt-get autoremove -y
 sudo apt-get autoclean -y
 
+# Ajout des libs
+sudo apt-get install libgtk-3-dev libpigpio-dev libbcm2835-dev
+
 # Lire la version actuelle
 current_version=$(cat "/home/neoffice/neoffice_version.txt")
 
