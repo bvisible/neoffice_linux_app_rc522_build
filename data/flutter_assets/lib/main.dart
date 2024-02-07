@@ -448,8 +448,6 @@ class _MyAppState extends State<MyApp> {
       });
     }
 
-    print("Selected worksheet: $selectedWorksheet");
-    print(selectedWorksheet);
     showDialog(
       context: navigatorKey.currentContext!,
       builder: (BuildContext context) {
@@ -514,20 +512,14 @@ class _MyAppState extends State<MyApp> {
                 SizedBox(height: 20),
                 Text("Finir", style: TextStyle(fontWeight: FontWeight.bold)),
                 ElevatedButton(
-                  onPressed: selectedWorksheet != null &&
-                          selectedWorksheet!.startsWith("WS-")
-                      ? () {
-                          Navigator.of(context).pop();
-                          _showEndWorkDialog(context, selectedWorksheet);
-                        }
-                      : null, // Grise le bouton si selectedWorksheet est null ou ne commence pas par "WS-"
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _showEndWorkDialog(context, selectedWorksheet);
+                  },
                   child: Text("Finir le travail",
                       style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: selectedWorksheet != null &&
-                            selectedWorksheet!.startsWith("WS-")
-                        ? Color.fromRGBO(16, 98, 254, 1)
-                        : Colors.grey, // Change la couleur si grisé
+                    backgroundColor: Color.fromRGBO(16, 98, 254, 1),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(5),
                     ),
