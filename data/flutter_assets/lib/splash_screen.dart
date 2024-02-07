@@ -27,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (instanceUrl != null && password != null) {
       final apiProvider = Provider.of<ApiProvider>(context, listen: false);
-      apiProvider.setBaseUrl(instanceUrl); // <-- Cette ligne définira le _baseUrl
+      apiProvider.setBaseUrl(instanceUrl);
       final result = await apiProvider.checkauth(password, context);
       if (result.success) {
         Navigator.pushReplacement(
@@ -52,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: CircularProgressIndicator(), // Une animation de chargement pendant la vérification
+        child: CircularProgressIndicator(),
       ),
     );
   }

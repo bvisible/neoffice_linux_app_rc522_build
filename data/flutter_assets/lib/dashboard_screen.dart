@@ -20,6 +20,7 @@ import 'package:flutter_analog_clock/flutter_analog_clock.dart';
 import 'package:neoffice_linux_app_rc522/second_screen/second_screen_view.dart';
 import 'package:neoffice_linux_app_rc522/services/checkin_orout_service.dart';
 import 'package:provider/provider.dart';
+import 'package:neoffice_linux_app_rc522/main.dart';
 
 class Background extends StatefulWidget {
   @override
@@ -35,7 +36,8 @@ class _BackgroundState extends State<Background>
   void initState() {
     super.initState();
     //_controller = AnimationController(vsync: this);
-    _imageUrlFuture = fetchImageUrl('https://bing.biturl.top/?resolution=1920&format=json&index=0&mkt=random');
+    _imageUrlFuture = fetchImageUrl(
+        'https://bing.biturl.top/?resolution=1920&format=json&index=0&mkt=random');
   }
 
   @override
@@ -109,6 +111,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Timer? _timerWeather;
   Timer? _dateTimeTimer;
   Future<int?>? _posValueFuture;
+  Future<int?>? _worksheetValueFuture;
 
   @override
   void initState() {
@@ -117,9 +120,12 @@ class _DashboardPageState extends State<DashboardPage> {
     _getVersion();
     _updateCurrentDateTime();
     _fetchWeatherData();
-    _timerWeather = Timer.periodic(Duration(minutes: 5), (Timer t) => _fetchWeatherData());
-    _dateTimeTimer = Timer.periodic(Duration(seconds: 1), (timer) => _updateCurrentDateTime());
+    _timerWeather =
+        Timer.periodic(Duration(minutes: 5), (Timer t) => _fetchWeatherData());
+    _dateTimeTimer = Timer.periodic(
+        Duration(seconds: 1), (timer) => _updateCurrentDateTime());
     _posValueFuture = apiProvider.getNeoConfig("pos", context);
+    _worksheetValueFuture = apiProvider.getNeoConfig("worksheet", context);
   }
 
   _getVersion() async {
@@ -230,8 +236,10 @@ class _DashboardPageState extends State<DashboardPage> {
                                 children: [
                                   Padding(
                                     padding: EdgeInsets.only(left: 10),
-                                    child: Image.asset('assets/images/emoji_hello.png',
-                                        height: 35, width: 35),
+                                    child: Image.asset(
+                                        'assets/images/emoji_hello.png',
+                                        height: 35,
+                                        width: 35),
                                   ),
                                   SizedBox(width: 10),
                                   Expanded(
@@ -248,7 +256,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                                 fontWeight: FontWeight.bold),
                                           ),
                                           TextSpan(
-                                            text: 'Veuillez scanner votre badge...',
+                                            text:
+                                                'Veuillez scanner votre badge...',
                                           ),
                                         ],
                                       ),
@@ -298,7 +307,8 @@ class _DashboardPageState extends State<DashboardPage> {
                         SizedBox(width: 20.0),
                         FutureBuilder<int?>(
                           future: _posValueFuture,
-                          builder: (BuildContext context, AsyncSnapshot<int?> snapshot) {
+                          builder: (BuildContext context,
+                              AsyncSnapshot<int?> snapshot) {
                             if (snapshot.hasData && snapshot.data == 1) {
                               return SizedBox(
                                 height: 150,
@@ -308,13 +318,17 @@ class _DashboardPageState extends State<DashboardPage> {
                                     onTap: () {
                                       Navigator.pushReplacement(
                                         context,
-                                        MaterialPageRoute(builder: (context) => SecondscreenPage()),
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                SecondscreenPage()),
                                       );
                                     },
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: <Widget>[
-                                        Image.asset('assets/icons/cart.png', height: 80, width: 80),
+                                        Image.asset('assets/icons/cart.png',
+                                            height: 80, width: 80),
                                         SizedBox(width: 5.0),
                                         Text('Second écran'),
                                       ],
@@ -323,7 +337,41 @@ class _DashboardPageState extends State<DashboardPage> {
                                 ),
                               );
                             } else {
-                              // Si "pos" est 0 ou null, on retourne un widget vide
+                              return SizedBox.shrink();
+                            }
+                          },
+                        ),
+                        SizedBox(width: 20.0),
+                        FutureBuilder<int?>(
+                          future: _worksheetValueFuture,
+                          builder: (BuildContext context,
+                              AsyncSnapshot<int?> snapshot) {
+                            if (snapshot.hasData && snapshot.data == 1) {
+                              return SizedBox(
+                                height: 150,
+                                width: 150,
+                                child: _buildBlurBox(
+                                  child: InkWell(
+                                    onTap: () {
+                                      myAppStateKey.currentState
+                                          ?.showScannerModal("nobarcode");
+                                    },
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        Image.asset(
+                                            'assets/icons/worksheet.png',
+                                            height: 80,
+                                            width: 80),
+                                        SizedBox(width: 5.0),
+                                        Text('Feuille de travail'),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            } else {
                               return SizedBox.shrink();
                             }
                           },
