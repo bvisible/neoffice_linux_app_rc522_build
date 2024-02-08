@@ -486,7 +486,7 @@ class _MyAppState extends State<MyApp> {
                   }).toList(),
                 ),
                 SizedBox(height: 20),
-                Text("Commancer",
+                Text("Commencer",
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 SizedBox(height: 5),
                 ElevatedButton(
