@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:neoffice_linux_app_rc522/services/api_provider.dart';
 import 'package:neoffice_linux_app_rc522/splash_screen.dart';
@@ -9,6 +10,7 @@ import 'package:fast_cached_network_image/fast_cached_network_image.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:neoffice_linux_app_rc522/services/checkin_orout_service.dart';
 import 'package:flutter_barcode_listener/flutter_barcode_listener.dart';
+import 'package:http/http.dart' as http;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,6 +55,7 @@ class _MyAppState extends State<MyApp> {
   ApiProvider apiProvider = ApiProvider();
   String? selectedWorksheet;
   List<String> worksheets = [];
+  String? _pdfFilePath;
 
   Map<int, Color> color = {
     50: Color.fromRGBO(16, 98, 254, .1),
@@ -107,7 +110,9 @@ class _MyAppState extends State<MyApp> {
                 scannedBarcode = barcode.toLowerCase();
                 var matchingEmployee = employees.firstWhere(
                   (employee) =>
-                      employee['name'].toLowerCase() == scannedBarcode,
+                      employee['name'].toLowerCase() == scannedBarcode ||
+                      employee['employee_number'].toString() ==
+                          barcode, // Recherche par employee_number
                   orElse: () => <String, dynamic>{},
                 );
                 if (matchingEmployee.isNotEmpty) {
@@ -178,7 +183,22 @@ class _MyAppState extends State<MyApp> {
                         (Map<String, dynamic> value) {
                           return DropdownMenuItem<Map<String, dynamic>>(
                             value: value,
-                            child: Text(value['name']),
+                            child: RichText(
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: value['name'],
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                  TextSpan(text: ' '),
+                                  TextSpan(
+                                    text: '(${value['employee_number']})',
+                                    style: TextStyle(
+                                        color: Colors.grey, fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
                           );
                         },
                       ).toList(),
@@ -352,7 +372,9 @@ class _MyAppState extends State<MyApp> {
                 scannedBarcode = barcode.toLowerCase();
                 var matchingEmployee = employees.firstWhere(
                   (employee) =>
-                      employee['name'].toLowerCase() == scannedBarcode,
+                      employee['name'].toLowerCase() == scannedBarcode ||
+                      employee['employee_number'].toString() ==
+                          barcode, // Recherche par employee_number
                   orElse: () => <String, dynamic>{},
                 );
                 if (matchingEmployee.isNotEmpty) {
@@ -378,7 +400,22 @@ class _MyAppState extends State<MyApp> {
                         (Map<String, dynamic> value) {
                           return DropdownMenuItem<Map<String, dynamic>>(
                             value: value,
-                            child: Text(value['name']),
+                            child: RichText(
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: value['name'],
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                  TextSpan(text: ' '),
+                                  TextSpan(
+                                    text: '(${value['employee_number']})',
+                                    style: TextStyle(
+                                        color: Colors.grey, fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
                           );
                         },
                       ).toList(),
@@ -448,6 +485,17 @@ class _MyAppState extends State<MyApp> {
       });
     }
 
+    void showPdfLoaderDialog(BuildContext context, String worksheetName) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return PdfLoaderDialog(
+              worksheetName: worksheetName, parentContext: context);
+        },
+      );
+    }
+
     showDialog(
       context: navigatorKey.currentContext!,
       builder: (BuildContext context) {
@@ -461,29 +509,50 @@ class _MyAppState extends State<MyApp> {
                 Text("Feuille de travail",
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 SizedBox(height: 5),
-                DropdownButton<String>(
-                  isExpanded: true,
-                  value: selectedWorksheet,
-                  icon: Icon(Icons.arrow_downward),
-                  iconSize: 24,
-                  elevation: 16,
-                  style: TextStyle(color: Colors.deepPurple),
-                  underline: Container(
-                    height: 2,
-                    color: Colors.deepPurpleAccent,
-                  ),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedWorksheet = newValue;
-                    });
-                  },
-                  items:
-                      worksheets.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: selectedWorksheet,
+                        icon: Icon(Icons.arrow_downward),
+                        iconSize: 24,
+                        elevation: 16,
+                        style: TextStyle(color: Colors.deepPurple),
+                        underline: Container(
+                          height: 2,
+                          color: Colors.deepPurpleAccent,
+                        ),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedWorksheet = newValue;
+                          });
+                        },
+                        items: worksheets
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.picture_as_pdf,
+                        color: selectedWorksheet != null &&
+                                selectedWorksheet!.startsWith("WS-")
+                            ? Colors.blue // ou une autre couleur active
+                            : Colors.grey, // Couleur pour griser l'icône
+                      ),
+                      onPressed: selectedWorksheet != null &&
+                              selectedWorksheet!.startsWith("WS-")
+                          ? () async {
+                              showPdfLoaderDialog(context, selectedWorksheet!);
+                            }
+                          : null, // Désactive le bouton si selectedWorksheet est null ou ne commence pas par "WS-"
+                    ),
+                  ],
                 ),
                 SizedBox(height: 20),
                 Text("Commencer",
@@ -587,6 +656,89 @@ class _MyAppState extends State<MyApp> {
         home: SplashScreen(),
       ),
       useKeyDownEvent: true,
+    );
+  }
+}
+
+class PdfLoaderDialog extends StatefulWidget {
+  final String worksheetName;
+  final BuildContext parentContext;
+
+  const PdfLoaderDialog(
+      {Key? key, required this.worksheetName, required this.parentContext})
+      : super(key: key);
+
+  @override
+  _PdfLoaderDialogState createState() => _PdfLoaderDialogState();
+}
+
+class _PdfLoaderDialogState extends State<PdfLoaderDialog> {
+  bool isLoading = true;
+  List<String>? imageUrls;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadImageUrls();
+  }
+
+  void _loadImageUrls() async {
+    List<String>? urls =
+        await Provider.of<ApiProvider>(widget.parentContext, listen: false)
+            .getWorksheetPDF(widget.worksheetName, widget.parentContext);
+    if (urls != null && urls.isNotEmpty) {
+      setState(() {
+        isLoading = false;
+        imageUrls = urls;
+      });
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+      print("Erreur lors du chargement des URLs des images");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      insetPadding: EdgeInsets.all(10), // Ajustez l'espace autour du dialogue
+      child: Container(
+        width: double.maxFinite, // Utilisez toute la largeur disponible
+        height: MediaQuery.of(context).size.height *
+            0.9, // 90% de la hauteur de l'écran
+        child: isLoading
+            ? Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  Expanded(
+                    child: Scrollbar(
+                      thickness: 6.0, // Épaisseur de la barre de défilement
+                      radius: Radius.circular(
+                          5.0), // Rayon des bords de la barre de défilement
+                      child: ListView.builder(
+                        itemCount: imageUrls?.length ?? 0,
+                        itemBuilder: (BuildContext context, int index) {
+                          return InteractiveViewer(
+                            panEnabled:
+                                false, // Set it to false to prevent panning.
+                            boundaryMargin: EdgeInsets.all(100),
+                            minScale: 0.5,
+                            maxScale: 4,
+                            child: Image.network(imageUrls![index]),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () =>
+                        Navigator.of(context).pop(), // Ferme le dialogue
+                    child: Text('Fermer'),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 }
