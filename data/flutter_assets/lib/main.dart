@@ -57,7 +57,6 @@ class _MyAppState extends State<MyApp> {
   ApiProvider apiProvider = ApiProvider();
   String? selectedWorksheet;
   List<String> worksheets = [];
-  String? _pdfFilePath;
 
   Map<int, Color> color = {
     50: Color.fromRGBO(16, 98, 254, .1),
@@ -83,12 +82,15 @@ class _MyAppState extends State<MyApp> {
       isDialogShown = true;
     });
 
-    rootScaffoldMessengerKey.currentState?.showSnackBar(
-      SnackBar(
-        content: Text('Recherche de la feuille de travail $selectedWorksheet'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    if (selectedWorksheet != "NOBARCODE") {
+      rootScaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(
+          content:
+              Text('Recherche de la feuille de travail $selectedWorksheet'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
 
     worksheets = await apiProvider.getWorksheet(context) ?? [];
 
@@ -155,7 +157,7 @@ class _MyAppState extends State<MyApp> {
                   rootScaffoldMessengerKey.currentState?.showSnackBar(
                     SnackBar(
                       content: Text(
-                          'Aucun employé trouvé pour le code-barres : $barcode'),
+                          'Aucun employé trouvé pour le code-barres : $scannedBarcode'),
                       duration: Duration(seconds: 2),
                     ),
                   );
@@ -415,7 +417,7 @@ class _MyAppState extends State<MyApp> {
                   rootScaffoldMessengerKey.currentState?.showSnackBar(
                     SnackBar(
                       content: Text(
-                          'Aucun employé trouvé pour le code-barres : $barcode'),
+                          'Aucun employé trouvé pour le code-barres : $scannedBarcode'),
                       duration: Duration(seconds: 2),
                     ),
                   );
