@@ -35,6 +35,8 @@ void main() async {
 }
 
 GlobalKey<_MyAppState> myAppStateKey = GlobalKey<_MyAppState>();
+final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
 
 class MyApp extends StatefulWidget {
   MyApp({Key? key}) : super(key: myAppStateKey);
@@ -81,6 +83,13 @@ class _MyAppState extends State<MyApp> {
       isDialogShown = true;
     });
 
+    rootScaffoldMessengerKey.currentState?.showSnackBar(
+      SnackBar(
+        content: Text('Recherche de la feuille de travail $selectedWorksheet'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+
     worksheets = await apiProvider.getWorksheet(context) ?? [];
 
     void _showStartWorkDialog(context, String? selectedWorksheet) async {
@@ -107,7 +116,7 @@ class _MyAppState extends State<MyApp> {
             bufferDuration: Duration(milliseconds: 200),
             onBarcodeScanned: (barcode) {
               setState(() {
-                scannedBarcode = barcode.toLowerCase();
+                scannedBarcode = barcode.trim();
                 var matchingEmployee = employees.firstWhere(
                   (employee) =>
                       employee['name'].toLowerCase() == scannedBarcode ||
@@ -135,6 +144,21 @@ class _MyAppState extends State<MyApp> {
                   } else {
                     selectedActivityType = null;
                   }
+                  rootScaffoldMessengerKey.currentState?.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          'Employé sélectionné : ${matchingEmployee['name']}'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                } else {
+                  rootScaffoldMessengerKey.currentState?.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          'Aucun employé trouvé pour le code-barres : $barcode'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
                 }
               });
             },
@@ -302,7 +326,8 @@ class _MyAppState extends State<MyApp> {
                                 context,
                               );
                               Navigator.of(context).pop();
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              rootScaffoldMessengerKey.currentState
+                                  ?.showSnackBar(
                                 SnackBar(
                                   content: Text(
                                       'Le début du travail a bien été enregistré. Vous pouvez commencer à travailler.'),
@@ -369,7 +394,7 @@ class _MyAppState extends State<MyApp> {
             bufferDuration: Duration(milliseconds: 200),
             onBarcodeScanned: (barcode) {
               setState(() {
-                scannedBarcode = barcode.toLowerCase();
+                scannedBarcode = barcode.trim();
                 var matchingEmployee = employees.firstWhere(
                   (employee) =>
                       employee['name'].toLowerCase() == scannedBarcode ||
@@ -379,6 +404,21 @@ class _MyAppState extends State<MyApp> {
                 );
                 if (matchingEmployee.isNotEmpty) {
                   selectedEmployee = matchingEmployee;
+                  rootScaffoldMessengerKey.currentState?.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          'Employé sélectionné : ${matchingEmployee['name']}'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                } else {
+                  rootScaffoldMessengerKey.currentState?.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          'Aucun employé trouvé pour le code-barres : $barcode'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
                 }
               });
             },
@@ -437,7 +477,8 @@ class _MyAppState extends State<MyApp> {
                                 context,
                               );
                               Navigator.of(context).pop();
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              rootScaffoldMessengerKey.currentState
+                                  ?.showSnackBar(
                                 SnackBar(
                                   content: Text(
                                       'La fin du travail a bien été enregistrée ${selectedEmployee!['name']}.'),
@@ -638,6 +679,7 @@ class _MyAppState extends State<MyApp> {
         });
       },
       child: MaterialApp(
+        scaffoldMessengerKey: rootScaffoldMessengerKey,
         navigatorKey: navigatorKey,
         title: 'Neoffice',
         theme: ThemeData(
