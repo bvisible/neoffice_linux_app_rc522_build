@@ -74,7 +74,7 @@ class _MyAppState extends State<MyApp> {
 
   void _showModalscanner(BuildContext context, String barcode) async {
     setState(() {
-      selectedWorksheet = barcode.trim();
+      selectedWorksheet = barcode.trim().toUpperCase();
     });
 
     if (isDialogShown) return;
@@ -116,7 +116,7 @@ class _MyAppState extends State<MyApp> {
             bufferDuration: Duration(milliseconds: 200),
             onBarcodeScanned: (barcode) {
               setState(() {
-                scannedBarcode = barcode.trim();
+                scannedBarcode = barcode.trim().toUpperCase();
                 var matchingEmployee = employees.firstWhere(
                   (employee) =>
                       employee['name'].toLowerCase() == scannedBarcode ||
@@ -394,7 +394,7 @@ class _MyAppState extends State<MyApp> {
             bufferDuration: Duration(milliseconds: 200),
             onBarcodeScanned: (barcode) {
               setState(() {
-                scannedBarcode = barcode.trim();
+                scannedBarcode = barcode.trim().toUpperCase();
                 var matchingEmployee = employees.firstWhere(
                   (employee) =>
                       employee['name'].toLowerCase() == scannedBarcode ||
