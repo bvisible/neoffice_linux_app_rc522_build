@@ -105,6 +105,9 @@ class _MyAppState extends State<MyApp> {
       TextEditingController billingRateController =
           TextEditingController(text: "0.00");
       String? scannedBarcode;
+      String barcodeBuffer = '';
+      Timer? debounceTimer;
+
       if (mounted) {
         setState(() {
           isDialogShown = true;
@@ -117,51 +120,57 @@ class _MyAppState extends State<MyApp> {
           return BarcodeKeyboardListener(
             bufferDuration: Duration(milliseconds: 200),
             onBarcodeScanned: (barcode) {
-              setState(() {
-                scannedBarcode = barcode.trim().toUpperCase();
-                var matchingEmployee = employees.firstWhere(
-                  (employee) =>
-                      employee['name'].toLowerCase() == scannedBarcode ||
-                      employee['employee_number'].toString() ==
-                          barcode, // Recherche par employee_number
-                  orElse: () => <String, dynamic>{},
-                );
-                if (matchingEmployee.isNotEmpty) {
-                  selectedEmployee = matchingEmployee;
-                  if (matchingEmployee['default_activity_type'] != null) {
-                    var matchingActivityType = activityType.firstWhere(
-                      (element) =>
-                          element['name'] ==
-                          matchingEmployee['default_activity_type'],
-                      orElse: () => <String, dynamic>{},
-                    );
-                    if (matchingActivityType.isNotEmpty) {
-                      selectedActivityType = matchingActivityType;
-                      billingRateController.text =
-                          matchingActivityType['billing_rate'].toString() ??
-                              "0.00";
+              debounceTimer?.cancel();
+              barcodeBuffer += barcode + '\n';
+              debounceTimer = Timer(Duration(milliseconds: 500), () {
+                setState(() {
+                  scannedBarcode = barcodeBuffer.trim().toUpperCase();
+                  var matchingEmployee = employees.firstWhere(
+                    (employee) =>
+                        employee['name'].toLowerCase() == scannedBarcode ||
+                        employee['employee_number'].toString() ==
+                            scannedBarcode,
+                    orElse: () => <String, dynamic>{},
+                  );
+                  if (matchingEmployee.isNotEmpty) {
+                    selectedEmployee = matchingEmployee;
+                    if (matchingEmployee['default_activity_type'] != null) {
+                      var matchingActivityType = activityType.firstWhere(
+                        (element) =>
+                            element['name'] ==
+                            matchingEmployee['default_activity_type'],
+                        orElse: () => <String, dynamic>{},
+                      );
+                      if (matchingActivityType.isNotEmpty) {
+                        selectedActivityType = matchingActivityType;
+                        billingRateController.text =
+                            matchingActivityType['billing_rate'].toString() ??
+                                "0.00";
+                      } else {
+                        selectedActivityType = null;
+                      }
                     } else {
                       selectedActivityType = null;
                     }
+                    rootScaffoldMessengerKey.currentState?.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            'Employé sélectionné : ${matchingEmployee['name']}'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
                   } else {
-                    selectedActivityType = null;
+                    rootScaffoldMessengerKey.currentState?.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            'Aucun employé trouvé pour le code-barres : $scannedBarcode'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
                   }
-                  rootScaffoldMessengerKey.currentState?.showSnackBar(
-                    SnackBar(
-                      content: Text(
-                          'Employé sélectionné : ${matchingEmployee['name']}'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                } else {
-                  rootScaffoldMessengerKey.currentState?.showSnackBar(
-                    SnackBar(
-                      content: Text(
-                          'Aucun employé trouvé pour le code-barres : $scannedBarcode'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                }
+                  barcodeBuffer =
+                      ''; // Réinitialisez le buffer après traitement
+                });
               });
             },
             child: AlertDialog(
@@ -382,7 +391,8 @@ class _MyAppState extends State<MyApp> {
           await apiProvider.getEmployees(context) ?? [];
       Map<String, dynamic>? selectedEmployee;
       String? scannedBarcode;
-
+      String barcodeBuffer = '';
+      Timer? debounceTimer;
       if (mounted) {
         setState(() {
           isDialogShown = true;
@@ -395,33 +405,39 @@ class _MyAppState extends State<MyApp> {
           return BarcodeKeyboardListener(
             bufferDuration: Duration(milliseconds: 200),
             onBarcodeScanned: (barcode) {
-              setState(() {
-                scannedBarcode = barcode.trim().toUpperCase();
-                var matchingEmployee = employees.firstWhere(
-                  (employee) =>
-                      employee['name'].toLowerCase() == scannedBarcode ||
-                      employee['employee_number'].toString() ==
-                          barcode, // Recherche par employee_number
-                  orElse: () => <String, dynamic>{},
-                );
-                if (matchingEmployee.isNotEmpty) {
-                  selectedEmployee = matchingEmployee;
-                  rootScaffoldMessengerKey.currentState?.showSnackBar(
-                    SnackBar(
-                      content: Text(
-                          'Employé sélectionné : ${matchingEmployee['name']}'),
-                      duration: Duration(seconds: 2),
-                    ),
+              debounceTimer?.cancel();
+              barcodeBuffer += barcode + '\n';
+              debounceTimer = Timer(Duration(milliseconds: 500), () {
+                setState(() {
+                  scannedBarcode = barcodeBuffer.trim().toUpperCase();
+                  var matchingEmployee = employees.firstWhere(
+                    (employee) =>
+                        employee['name'].toLowerCase() == scannedBarcode ||
+                        employee['employee_number'].toString() ==
+                            scannedBarcode,
+                    orElse: () => <String, dynamic>{},
                   );
-                } else {
-                  rootScaffoldMessengerKey.currentState?.showSnackBar(
-                    SnackBar(
-                      content: Text(
-                          'Aucun employé trouvé pour le code-barres : $scannedBarcode'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                }
+                  if (matchingEmployee.isNotEmpty) {
+                    selectedEmployee = matchingEmployee;
+                    rootScaffoldMessengerKey.currentState?.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            'Employé sélectionné : ${matchingEmployee['name']}'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  } else {
+                    rootScaffoldMessengerKey.currentState?.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            'Aucun employé trouvé pour le code-barres : $scannedBarcode'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                  barcodeBuffer =
+                      ''; // Réinitialisez le buffer après traitement
+                });
               });
             },
             child: AlertDialog(
